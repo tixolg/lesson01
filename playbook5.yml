@@ -1,0 +1,53 @@
+---
+
+- name: Install Apache
+  hosts: web
+  become: yes
+    
+  tasks:
+   - name: this install {{ web_package }} package
+     package:
+       name: "{{ web_package }}"
+       state: installed
+
+   - name: this starts {{ web_service }} service and enable it on every boot
+     service:
+       name: "{{ web_service }}"
+       state: started
+       enabled: yes
+
+   - name: Create file
+     copy:
+       dest: /var/www/html/index.html
+       content: |
+         <HTML>
+          <HEAD>
+          <TITLE>Ansible</TITLE>
+          <BODY bgcolor="teal">
+          <font color="purple"><h2>Welcome to my web server</h2>
+          </BODY>
+         </HTML>
+     notify: Restart Apache
+
+   - name: Install firewalld to nodes
+     yum: name=firewalld state=latest
+
+   - name: Start service firewalld
+     command: systemctl start firewalld
+
+   - name: Permit traffic in default zone for http service
+     firewalld:
+       service: http
+       permanent: yes
+       state: enabled
+       immediate: yes
+     notify: Restart firewalld
+
+  handlers:
+   - name: Restart Apache
+     service: name=httpd state=restarted
+
+   - name: Restart firewalld
+     service: name=firewalld state=restarted
+
+...

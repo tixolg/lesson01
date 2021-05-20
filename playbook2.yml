@@ -1,0 +1,23 @@
+---
+
+ - name: Uninstall Apache
+   hosts: nodes
+   become: yes
+   
+   
+   tasks:
+   - name: Remove file
+     file:
+        path: /var/www/html/index.html
+        state: absent
+
+   - name: Uninstall Apache
+     yum: name=httpd state=absent
+
+   - name: Permit traffic in default zone for http service
+     firewalld:
+        service: http
+        permanent: yes
+        state: disabled
+        immediate: yes
+...

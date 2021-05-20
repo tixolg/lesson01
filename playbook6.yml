@@ -1,0 +1,46 @@
+
+---
+
+ - name: Install vsftpd
+   hosts: node1.example.com
+   become: yes
+   
+   tasks:
+   - name: Install FTP package
+     yum: name=vsftpd  state=present
+     
+   - name: Start firewall Service
+     service: name=firewalld state=started enabled=yes
+
+   - name: Install WEB Service
+     yum: name=httpd state=latest
+   
+   - name: Start WEB Service
+     service: name=httpd state=started enabled=yes
+     
+   - name: Allow Web service in Firewall
+     firewalld: service=http permanent=true state=enabled immediate=true
+    
+   - name: Allow FTP service in Firewall
+     firewalld: port=21/tcp permanent=true state=enabled immediate=true
+
+   - name: Create home dir for anonymous user if it does not exists
+     file:  path=/var/ftp/pub  state=directory  mode=0755
+
+   - name: Modify FTP configuation
+     lineinfile:
+       dest: /etc/vsftpd/vsftpd.conf
+       backup: yes
+       backrefs: yes
+       state: present
+       regexp: "{{ item.regexp }}"
+       line: "{{ item.line }}"
+     with_items:
+      - { regexp: anonymous_enable=NO, line: anonymous_enable=YES }
+      - { regexp: anon_upload_enable, line: anon_upload_enable=YES }
+      - { regexp: anon_mkdir_write_enable, line: anon_mkdir_write_enable=YES }
+
+   - name: Reload FTP service
+     service: name=vsftpd state=restarted enabled=yes
+
+...
