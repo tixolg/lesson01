@@ -1,0 +1,22 @@
+
+---
+
+ - name: Add several user
+   hosts: nodes
+   become: yes
+   vars_files:
+    - credential.yml
+
+   tasks:
+    - name: Create user
+      user:
+        name: "{{ item.name }}"
+        comment: "{{ item.name }}@example.com"
+        create_home: yes
+        password: "{{ item.pwd | password_hash('sha512') }}"
+      loop:
+       - { name: 'Alice', pwd: "{{ pass_alice }}" }
+       - { name: 'Bob', pwd: "{{ pass_bob }}" }
+       - { name: 'Carol', pwd: "{{ pass_carol }}" }
+
+...
