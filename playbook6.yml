@@ -39,7 +39,8 @@
       - { regexp: anonymous_enable=NO, line: anonymous_enable=YES }
       - { regexp: anon_upload_enable, line: anon_upload_enable=YES }
       - { regexp: anon_mkdir_write_enable, line: anon_mkdir_write_enable=YES }
-
+      - { regexp: anon_root, line: anon_root=/var/ftp/pub }
+      
    - name: Reload FTP service
      service: name=vsftpd state=restarted enabled=yes
 
