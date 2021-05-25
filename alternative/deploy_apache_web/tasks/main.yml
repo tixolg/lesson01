@@ -1,0 +1,36 @@
+---
+# tasks file for deploy_apache_web
+
+- block:
+    - name: Install Apache Web Server for RedHat
+      yum: name=httpd state=latest
+    - name: Start Web Server servise for RedHat
+      service: name=httpd state=started enabled=yes
+  when: ansible_os_family == "RedHat"
+
+- block:
+    - name: Install Apache Web Server for Debian
+      apt: name=apache2 state=latest
+    - name: Start Web Server service for Debian
+      service: name=apache2 state=started enabled=yes
+  when: ansible_os_family == "Debian"
+
+- name: Generate INDEX.HTML file
+  template: src=index.j2 dest={{destin_folder}}/index.html mode=0555
+  notify:
+    - Restart Apache RedHat
+    - Restart Apache Debian
+
+- name: Install firewalld to nodes
+  yum: name=firewalld state=latest
+
+- name: Start service firewalld
+  command: systemctl start firewalld
+
+- name: Permit traffic in default zone for http service
+  firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+    immediate: yes
+  notify: Restart firewalld
